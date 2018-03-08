@@ -184,7 +184,7 @@ public class StateMachine<S, T> {
     }
 
     protected void publicFire(final T trigger, final Object... args) {
-        logger.debug("Firing {}");
+        logger.trace("Firing {}", trigger);
         TriggerWithParameters<S, T> configuration = config.getTriggerConfiguration(trigger);
         if (configuration != null) {
             configuration.validateParameters(args);
@@ -239,65 +239,6 @@ public class StateMachine<S, T> {
      */
     public boolean canFire(final T trigger) {
         return getCurrentRepresentation().canHandle(trigger);
-    }
-
-    /**
-     * This is a configuration method which will only execute an action in case a state transition
-     * is caused by a specific trigger.
-     *
-     * <p>This can be particularly useful for {@code onExit} configuration.</p>
-     *
-     * <pre>
-     * {@code config.configure(State.ACCEPTED)
-     *       .onExit(whenTriggeredBy(Trigger.CALLER_HUNG_UP, this::raiseCallerHungUpEvent))
-     *       .onExit(whenTriggeredBy(Trigger.OPERATOR_HUNG_UP, this::raiseOperatorCallerHungUpEvent));
-     * }</pre>
-     */
-    public static <S, T> Action1<Transition<S, T>> whenTriggeredBy(final T trigger, final Runnable action) {
-        return t -> {
-            if (t.getTrigger().equals(trigger)) {
-                action.run();
-            }
-        };
-    }
-
-    /**
-     * This is a configuration method which will only execute an action all cases a state transition
-     * is NOT caused by a specific trigger.
-     *
-     * <p>This can be particularly useful for {@code onExit} configuration.</p>
-     *
-     * <pre>
-     * {@code config.configure(State.ACTIVE)
-     *       .onExit(whenNotTriggeredBy(Trigger.OPERATOR_HUNG_UP, this::playTerminatedTone));
-     * }</pre>
-     */
-    public static <S, T> Action1<Transition<S, T>> whenNotTriggeredBy(final T trigger, final Runnable action) {
-        return t -> {
-            if (!t.getTrigger().equals(trigger)) {
-                action.run();
-            }
-        };
-    }
-
-    /**
-     * This is a configuration method which will only execute an action all cases a state transition
-     * is towards a specific destination state.
-     *
-     * <p>This can be particularly useful for {@code onExit} configuration.</p>
-     *
-     * <pre>
-     * {@code config.configure(State.ACTIVE)
-     *       .onExit(whenTransitioningTo(State.TERMINATED, this::playTerminatedTone))
-     *       .onExit(whenTransitioningTo(State.ON_HOLD, this::playHoldTone));
-     * }</pre>
-     */
-    public static <S, T> Action1<Transition<S, T>> whenTransitioningTo(final S destination, final Runnable action) {
-        return t -> {
-            if (t.getDestination().equals(destination)) {
-                action.run();
-            }
-        };
     }
 
     /**
