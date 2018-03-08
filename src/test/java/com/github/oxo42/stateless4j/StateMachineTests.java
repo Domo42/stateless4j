@@ -1,7 +1,9 @@
 package com.github.oxo42.stateless4j;
 
 import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.transitions.Transition;
 import org.junit.Test;
 
 import java.util.List;
@@ -217,6 +219,106 @@ public class StateMachineTests {
 
         config.setTriggerParameters(Trigger.X, String.class, int.class);
         config.setTriggerParameters(Trigger.X, String.class);
+    }
+
+    @Test
+    public void run_whenTriggeredByMatchesTrigger_actionIsExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenTriggeredBy(Trigger.X, action);
+        transition.doIt(new Transition<>(State.A, State.B, Trigger.X));
+
+        // then
+        assertTrue("Expected action to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void run_whenTriggeredByDoesNotMatchTrigger_actionIsNotExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenTriggeredBy(Trigger.X, action);
+        transition.doIt(new Transition<>(State.A, State.B, Trigger.Y));
+
+        // then
+        assertFalse("Expected action NOT to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void run_whenNotTriggeredByMatchesTrigger_actionIsNotExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenNotTriggeredBy(Trigger.X, action);
+        transition.doIt(new Transition<>(State.A, State.B, Trigger.X));
+
+        // then
+        assertFalse("Expected action NOT to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void run_whenNotTriggeredByDoesNotMatchTrigger_actionIsExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenNotTriggeredBy(Trigger.X, action);
+        transition.doIt(new Transition<>(State.A, State.B, Trigger.Y));
+
+        // then
+        assertTrue("Expected action to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void run_whenTransitioningToMatchesDestination_actionIsExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenTransitioningTo(State.A, action);
+        transition.doIt(new Transition<>(State.B, State.A, Trigger.Y));
+
+        // then
+        assertTrue("Expected action to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void run_whenTransitioningToDoesNotMatchDestination_actionIsNotExecuted() {
+        // given
+        boolean[] hasBeenExecuted = { false };
+        Runnable action = () -> hasBeenExecuted[0] = true;
+
+        // when
+        Action1<Transition<State, Trigger>> transition = StateMachine.whenTransitioningTo(State.A, action);
+        transition.doIt(new Transition<>(State.A, State.B, Trigger.Y));
+
+        // then
+        assertFalse("Expected action not to be executed.", hasBeenExecuted[0]);
+    }
+
+    @Test
+    public void anActionIsPerformed_givenAnInput_expectedResult() {
+        // Given
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+        StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
+        config.configure(State.A)
+              .permit(Trigger.Z, State.B);
+        sm.onUnhandledTrigger(sm::loggingUnhandledTriggerAction);
+
+        // When
+        sm.fire(Trigger.Y);
+
+        // Then
+        // No exception is thrown for unhandled trigger in current state.
     }
 
 //        @Test
