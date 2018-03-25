@@ -261,7 +261,7 @@ public class StateMachine<S, T> {
     /**
      * This method returns a function that will log a warning of a non defined state transition.
      *
-     * <p>This might be an sensible action besides the default of throwing an {@code IllegateStateException}. </p>
+     * <p>This might be an sensible action besides the default of throwing an {@code IllegateStateException}.</p>
      *
      * <p>If one wants to change the default unhandled behavior call {@link #onUnhandledTrigger(Action2)} with
      * the return value of this method.</p>
