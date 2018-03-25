@@ -3,7 +3,7 @@
 
     <groupId>com.codebullets.stateless4j</groupId>
     <artifactId>stateless4j</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1-SNAPSHOT</version>
     <name>stateless4j</name>
     <packaging>jar</packaging>
 
