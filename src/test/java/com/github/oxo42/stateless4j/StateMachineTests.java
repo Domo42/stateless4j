@@ -1,20 +1,18 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class StateMachineTests {
 
     final Enum StateA = State.A, StateB = State.B, StateC = State.C,
             TriggerX = Trigger.X, TriggerY = Trigger.Y;
-    boolean fired = false;
-    String entryArgS = null;
-    int entryArgI = 0;
+    private boolean fired = false;
 
     @Test
     public void CanUseReferenceTypeMarkers() {
@@ -124,13 +122,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .permitIf(Trigger.X, State.A, new FuncBoolean() {
-
-                    @Override
-                    public boolean call() {
-                        return false;
-                    }
-                });
+                .permitIf(Trigger.X, State.A, () -> false);
 
         StateMachine<State, Trigger> sm = new StateMachine<>(State.B, config);
 
@@ -160,13 +152,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .onEntry(new Action() {
-
-                    @Override
-                    public void doIt() {
-                        setFired();
-                    }
-                })
+                .onEntry(() -> setFired())
                 .ignore(Trigger.X);
 
         fired = false;
@@ -182,13 +168,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .onEntry(new Action() {
-
-                    @Override
-                    public void doIt() {
-                        setFired();
-                    }
-                })
+                .onEntry(() -> setFired())
                 .permitReentry(Trigger.X);
 
         fired = false;
@@ -234,50 +214,4 @@ public class StateMachineTests {
         // Then
         // No exception is thrown for unhandled trigger in current state.
     }
-
-//        @Test
-//        public void ParametersSuppliedToFireArePassedToEntryAction()
-//        {
-//        	StateMachine<State, Trigger> sm = new StateMachine<State, Trigger>(State.B);
-//
-//        	TriggerWithParameters2<String, Integer, State, Trigger> x = sm.setTriggerParameters(Trigger.X, String.class, int.class);
-//
-//            sm.configure(State.B)
-//                .permit(Trigger.X, State.C);
-//
-//
-//            sm.configure(State.C)
-//                .onEntryFrom(x, new Action2<String, int>() {
-//                	public void doIt(String s, int i) {
-//                		entryArgS = s;
-//                        entryArgI = i;
-//				}); 
-//
-//            var suppliedArgS = "something";
-//            var suppliedArgI = 42;
-//
-//            sm.fire(x, suppliedArgS, suppliedArgI);
-//
-//            AreEqual(suppliedArgS, entryArgS);
-//            AreEqual(suppliedArgI, entryArgI);
-//        }
-//
-//        @Test
-//        public void WhenAnUnhandledTriggerIsFired_TheProvidedHandlerIsCalledWithStateAndTrigger()
-//        {
-//            var sm = new StateMachine<State, Trigger>(State.B);
-//
-//            State? state = null;
-//            Trigger? trigger = null;
-//            sm.onUnhandledTrigger((s, t) =>
-//                                      {
-//                                          state = s;
-//                                          trigger = t;
-//                                      });
-//
-//            sm.fire(Trigger.Z);
-//
-//            AreEqual(State.B, state);
-//            AreEqual(Trigger.Z, trigger);
-//        }
 }
