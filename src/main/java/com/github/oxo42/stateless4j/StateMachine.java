@@ -184,7 +184,7 @@ public class StateMachine<S, T> {
     }
 
     protected void publicFire(final T trigger, final Object... args) {
-        logger.debug("Firing {}");
+        logger.trace("Firing {}", trigger);
         TriggerWithParameters<S, T> configuration = config.getTriggerConfiguration(trigger);
         if (configuration != null) {
             configuration.validateParameters(args);
@@ -205,6 +205,7 @@ public class StateMachine<S, T> {
             triggerBehaviour.performAction(args);
             setState(destination.get());
             getCurrentRepresentation().enter(transition, args);
+            logger.debug("{} --> {} : {}", source, destination.get(), trigger);
         }
     }
 
@@ -238,6 +239,19 @@ public class StateMachine<S, T> {
      */
     public boolean canFire(final T trigger) {
         return getCurrentRepresentation().canHandle(trigger);
+    }
+
+    /**
+     * The unhandled trigger will log the unexpected state transition. This provides the way to ignore the trigger in particualr state.
+     * It is different to the default behavior of stateless4j, which throws an IllegalStateException.
+     *
+     * <p>To change to this behavior install this method by calling {@link #onUnhandledTrigger(Action2)}.</p>
+     */
+    public void loggingUnhandledTriggerAction(final S state, final T trigger) {
+        logger.warn(
+                "No transition defined for trigger {} when in state {}. Consider ignoring the trigger as part of the configuration.",
+                trigger,
+                state);
     }
 
     /**
