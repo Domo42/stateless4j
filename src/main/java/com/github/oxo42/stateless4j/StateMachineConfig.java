@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The state machine configuration. Reusable.
@@ -28,6 +29,8 @@ public class StateMachineConfig<TState,TTrigger> {
      * entering the initial state never fires its entry action.
      */
     private boolean entryActionOfInitialStateEnabled = false;
+
+    private String stateMachineName;
 
     /**
      * Gets whether the entry action of the initial state of the state machine
@@ -167,6 +170,15 @@ public class StateMachineConfig<TState,TTrigger> {
         TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> configuration = new TriggerWithParameters3<>(trigger, classe0, classe1, classe2);
         saveTriggerConfiguration(configuration);
         return configuration;
+    }
+
+    public StateMachineConfig<TState,TTrigger> withName(final String name) {
+        this.stateMachineName = name;
+        return this;
+    }
+
+    Optional<String> getName() {
+        return Optional.ofNullable(stateMachineName);
     }
 
     public void generateDotFileInto(final OutputStream dotFile) throws IOException {

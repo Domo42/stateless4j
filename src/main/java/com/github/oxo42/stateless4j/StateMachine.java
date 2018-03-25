@@ -25,6 +25,8 @@ public class StateMachine<S, T> {
     protected final Func<S> stateAccessor;
     protected final Action1<S> stateMutator;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final String stateMachineNameLogPrefix;
+
     protected Action2<S, T> unhandledTriggerAction = (state, trigger) -> {
         throw new IllegalStateException(
                 String.format(
@@ -50,6 +52,8 @@ public class StateMachine<S, T> {
      */
     public StateMachine(final S initialState, final StateMachineConfig<S, T> config) {
         this.config = config;
+        this.stateMachineNameLogPrefix = nameLoggingPrefix(config.getName().orElse(""));
+
         final StateReference<S, T> reference = new StateReference<>();
         reference.setState(initialState);
         stateAccessor = reference::getState;
@@ -73,6 +77,7 @@ public class StateMachine<S, T> {
         this.config = config;
         this.stateAccessor = stateAccessor;
         this.stateMutator = stateMutator;
+        this.stateMachineNameLogPrefix = nameLoggingPrefix(config.getName().orElse(""));
         stateMutator.doIt(initialState);
     }
 
@@ -184,7 +189,7 @@ public class StateMachine<S, T> {
     }
 
     protected void publicFire(final T trigger, final Object... args) {
-        logger.trace("Firing {}", trigger);
+        logger.trace(stateMachineNameLogPrefix + "Firing {}", trigger);
         TriggerWithParameters<S, T> configuration = config.getTriggerConfiguration(trigger);
         if (configuration != null) {
             configuration.validateParameters(args);
@@ -205,7 +210,7 @@ public class StateMachine<S, T> {
             triggerBehaviour.performAction(args);
             setState(destination.get());
             getCurrentRepresentation().enter(transition, args);
-            logger.debug("{} --> {} : {}", source, destination.get(), trigger);
+            logger.debug(stateMachineNameLogPrefix + "{} --> {} : {}", stateMachineNameLogPrefix, source, destination.get(), trigger);
         }
     }
 
@@ -216,8 +221,9 @@ public class StateMachine<S, T> {
      */
     public void onUnhandledTrigger(final Action2<S, T> unhandledTriggerAction) {
         if (unhandledTriggerAction == null) {
-            throw new IllegalStateException("unhandledTriggerAction");
+            throw new IllegalArgumentException("unhandledTriggerAction must not be null");
         }
+
         this.unhandledTriggerAction = unhandledTriggerAction;
     }
 
@@ -249,7 +255,7 @@ public class StateMachine<S, T> {
      */
     public void logUnhandledTriggerAction(final S state, final T trigger) {
         logger.warn(
-                "No transition defined for trigger {} when in state {}. Consider ignoring the trigger as part of the configuration.",
+                stateMachineNameLogPrefix + "No transition defined for trigger {} when in state {}. Consider ignoring the trigger as part of the configuration.",
                 trigger,
                 state);
     }
@@ -277,8 +283,13 @@ public class StateMachine<S, T> {
         }
 
         return String.format(
-                "StateMachine {{ State = %s, PermittedTriggers = {{ %s }}}}",
+                "StateMachine %s {{ State = %s, PermittedTriggers = {{ %s }}}}",
+                stateMachineNameLogPrefix,
                 getState(),
                 params.toString());
+    }
+
+    private String nameLoggingPrefix(final String stateMachineName) {
+        return !stateMachineName.isEmpty() ? stateMachineName + " - " : "";
     }
 }
