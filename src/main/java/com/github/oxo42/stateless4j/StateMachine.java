@@ -4,7 +4,11 @@ import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.Action2;
 import com.github.oxo42.stateless4j.delegates.Func;
 import com.github.oxo42.stateless4j.transitions.Transition;
-import com.github.oxo42.stateless4j.triggers.*;
+import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -247,17 +251,29 @@ public class StateMachine<S, T> {
         return getCurrentRepresentation().canHandle(trigger);
     }
 
-    /**
-     * The unhandled trigger will log the unexpected state transition. This provides a way to ignore the trigger in particular state.
-     * It is different to the default behavior of stateless4j, which throws an IllegalStateException.
-     *
-     * <p>To change to this behavior install this method by calling {@link #onUnhandledTrigger(Action2)}.</p>
-     */
-    public void logUnhandledTriggerAction(final S state, final T trigger) {
+    private void logUnhandledTriggerAction(final S state, final T trigger) {
         logger.warn(
                 stateMachineNameLogPrefix + "No transition defined for trigger {} when in state {}. Consider ignoring the trigger as part of the configuration.",
                 trigger,
                 state);
+    }
+
+    /**
+     * This method returns a function that will log a warning of a non defined state transition.
+     *
+     * <p>This might be an sensible action besides the default of throwing an {@code IllegateStateException}. </p>
+     *
+     * <p>If one wants to change the default unhandled behavior call {@link #onUnhandledTrigger(Action2)} with
+     * the return value of this method.</p>
+     *
+     * <p>The benefit of using this method compared to others is that the existing logger instance will
+     * be re-used. In addition, the log message will contain the optionally configured state machine
+     * name as well.</p>
+     *
+     * @return Returns an action logging an undefined state transition warning.
+     */
+    public Action2<S, T> performUnhandledLoggingWarning() {
+        return this::logUnhandledTriggerAction;
     }
 
     /**

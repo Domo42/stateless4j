@@ -206,7 +206,7 @@ public class StateMachineTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         config.configure(State.A)
               .permit(Trigger.Z, State.B);
-        sm.onUnhandledTrigger(sm::logUnhandledTriggerAction);
+        sm.onUnhandledTrigger(sm.performUnhandledLoggingWarning());
 
         // When
         sm.fire(Trigger.Y);
