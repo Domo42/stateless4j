@@ -1,9 +1,7 @@
 package com.github.oxo42.stateless4j;
 
 import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.FuncBoolean;
-import com.github.oxo42.stateless4j.transitions.Transition;
 import org.junit.Test;
 
 import java.util.List;
@@ -228,7 +226,7 @@ public class StateMachineTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         config.configure(State.A)
               .permit(Trigger.Z, State.B);
-        sm.onUnhandledTrigger(sm::loggingUnhandledTriggerAction);
+        sm.onUnhandledTrigger(sm::logUnhandledTriggerAction);
 
         // When
         sm.fire(Trigger.Y);

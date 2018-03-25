@@ -242,12 +242,12 @@ public class StateMachine<S, T> {
     }
 
     /**
-     * The unhandled trigger will log the unexpected state transition. This provides the way to ignore the trigger in particualr state.
+     * The unhandled trigger will log the unexpected state transition. This provides a way to ignore the trigger in particular state.
      * It is different to the default behavior of stateless4j, which throws an IllegalStateException.
      *
      * <p>To change to this behavior install this method by calling {@link #onUnhandledTrigger(Action2)}.</p>
      */
-    public void loggingUnhandledTriggerAction(final S state, final T trigger) {
+    public void logUnhandledTriggerAction(final S state, final T trigger) {
         logger.warn(
                 "No transition defined for trigger {} when in state {}. Consider ignoring the trigger as part of the configuration.",
                 trigger,
