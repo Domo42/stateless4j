@@ -17,7 +17,7 @@ published by oxo42. The code package names have not changed.
     <dependency>
         <groupId>com.codebullets.stateless4j</groupId>
         <artifactId>stateless4j</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
     </dependency>
 ```
 
