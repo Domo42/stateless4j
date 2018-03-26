@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -143,10 +145,6 @@ public class StateMachineTests {
         assertEquals(State.C, sm.getState());
     }
 
-    private void setFired() {
-        fired = true;
-    }
-
     @Test
     public void WhenTriggerIsIgnored_ActionsNotExecuted() {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
@@ -213,5 +211,30 @@ public class StateMachineTests {
 
         // Then
         // No exception is thrown for unhandled trigger in current state.
+    }
+
+    @Test
+    public void toString_nameConfigured_stringContainsName() {
+        // given
+        final String customName = "theCustomStateMachineName";
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+
+        StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
+        config.withName(customName)
+                .configure(State.A)
+                .permit(Trigger.Z, State.B);
+
+        sm.onUnhandledTrigger(sm.performUnhandledLoggingWarning());
+        sm.fire(Trigger.Y);
+
+        // when
+        String toString = sm.toString();
+
+        // then
+        assertThat("Expected toString() to contain state machine name.", toString, containsString(customName));
+    }
+
+    private void setFired() {
+        fired = true;
     }
 }
